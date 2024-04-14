@@ -2,10 +2,49 @@
   "name": "tech-challenge-ubio",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "out/bin/serve.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node out/bin/serve",
+    "dev": "npm run clean && tsc -w",
+    "lint": "eslint --ext=.js,.ts --cache .",
+    "clean": "rm -rf out",
+    "compile": "npm run clean && tsc",
+    "test": "cross-env NODE_ENV=test mocha src/test/**/*.test.js",
+    "docs": "npm run docs:openapi && npm run docs:api",
+    "docs:openapi": "generate-openapi > openapi.json",
+    "docs:api": "generate-docs > API.md",
+    "preversion": "npm run lint && npm run compile",
+    "version": "npm run docs && git add openapi.json API.md",
+    "postversion": "git push origin $(git rev-parse --abbrev-ref HEAD) --tags"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@types/koa": "^2.15.0",
+    "@types/mongodb": "^4.0.7",
+    "@ubio/framework": "^15.11.1",
+    "dotenv": "^16.4.5",
+    "koa": "^2.15.3",
+    "mesh-ioc": "^3.3.0",
+    "mongodb": "^6.5.0",
+    "reflect-metadata": "^0.1.14"
+  },
+  "devDependencies": {
+    "@nodescript/eslint-config": "^1.2.0",
+    "@types/chai": "^4.3.14",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.12.7",
+    "@typescript-eslint/eslint-plugin": "^7.6.0",
+    "@typescript-eslint/parser": "^7.6.0",
+    "chai": "^4.3.14",
+    "chai-http": "^4.4.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "mocha": "^10.4.0",
+    "npm-run-all": "^4.1.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
 }
