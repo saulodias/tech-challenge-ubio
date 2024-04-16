@@ -2,13 +2,11 @@ import { BodyParam, Delete, Get, PathParam, Post, Router } from '@ubio/framework
 import { dep } from 'mesh-ioc';
 
 import { Instance } from '../schema/instance.js';
-import { GroupSummary } from '../services/discovery-service-base.js';
-import { DiscoveryService } from '../services/discovery-service.js';
-import { DeleteResult } from 'mongodb';
+import { DiscoveryServiceBase, GroupSummary } from '../services/discovery-service-base.js';
 
 
 export class DiscoveryRouter extends Router {
-    @dep() discoveryService!: DiscoveryService;
+    @dep() discoveryService!: DiscoveryServiceBase;
 
     @Post({
         path: '/{group}/{id}',

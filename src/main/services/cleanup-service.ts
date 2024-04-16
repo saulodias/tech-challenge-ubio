@@ -1,30 +1,45 @@
 import { dep } from 'mesh-ioc';
 
-import { DiscoveryService } from './discovery-service.js';
-import { LoggerService } from './logger-service.js';
+import { HEARTBEAT_TIMEOUT } from './constants-keys.js';
+import { DiscoveryServiceBase } from './discovery-service-base.js';
+import { LoggerServiceBase } from './logger-service-base.js';
 
 export class CleanupService {
 
-    @dep() private logger!: LoggerService;
-    @dep() private discoveryService!: DiscoveryService;
-    @dep({ key: 'HeartbeatTimeout' }) private heartbeatTimeout!: number;
+    @dep() private logger!: LoggerServiceBase;
+    @dep() private discoveryService!: DiscoveryServiceBase;
+    @dep({ key: HEARTBEAT_TIMEOUT }) private _heartbeatTimeout!: number;
 
-    constructor() {
-        this.startInstanceCleanupRoutine();
+    private cleanupIntervalId: NodeJS.Timeout | null = null;
+
+    get heartbeatTimeout() {
+        return this._heartbeatTimeout;
     }
 
-    async startInstanceCleanupRoutine() {
-        setInterval(async () => {
+    async startCleanupRoutine() {
+        this.logger.info(`Starting cleanup with ${this._heartbeatTimeout} min heartbeat timeout...`);
+
+        this.cleanupIntervalId = setInterval(async () => {
             try {
                 await this.cleanupExpiredInstances();
             } catch (error: any) {
                 this.logger.error('Error occurred during instance cleanup:', error);
             }
-        }, this.heartbeatTimeout * 60 * 1000);
+        }, this._heartbeatTimeout * 60 * 1000);
+    }
+
+    stopCleanupRoutine() {
+        if (this.cleanupIntervalId) {
+            clearInterval(this.cleanupIntervalId);
+            this.cleanupIntervalId = null;
+            this.logger.info('Cleanup routine stopped.');
+        } else {
+            this.logger.info('Cleanup routine is not running.');
+        }
     }
 
     async cleanupExpiredInstances() {
-        const expirationDate = Date.now() - (this.heartbeatTimeout * 60 * 1000)
+        const expirationDate = Date.now() - (this._heartbeatTimeout * 60 * 1000)
 
         // Query all groups to get summary
         const allGroups = await this.discoveryService.getAllGroupsSummary();

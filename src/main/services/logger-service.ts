@@ -2,9 +2,10 @@ import { LogData, LogFormatter, Logger, LogLevel, LogPayload } from '@ubio/frame
 import { dep } from 'mesh-ioc';
 
 import { LoggerRepository } from '../repositories/logger-repository.js';
+import { LoggerServiceBase } from './logger-service-base.js';
 
 
-export class LoggerService implements Logger {
+export class LoggerService implements LoggerServiceBase {
     @dep() private loggerRepository!: LoggerRepository;
 
     level: LogLevel = LogLevel.ERROR;

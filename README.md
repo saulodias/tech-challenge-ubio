@@ -19,7 +19,7 @@ Once Docker completes the setup, the API will be accessible at [http://localhost
 
 > If you can't use Docker there is a [Manual Setup Guide](#manual-setup-guide) at the end of this file.
 
-## Integration Testing
+## Integration and Unit Testing
 
 To run the integration tests:
 
@@ -32,6 +32,8 @@ To run the integration tests:
     ```bash
     npm test
     ```
+
+> Development Note: For this challenge, both integration and unit tests are executed with a single command for simplicity. However, in a real production scenario, they should be segregated. Integration tests, needing a testing environment, serve a distinct purpose in the CI/CD pipeline compared to unit tests.
 
 ## Endpoints
 

@@ -10,7 +10,7 @@
     "lint": "eslint --ext=.js,.ts --cache .",
     "clean": "rm -rf out",
     "compile": "npm run clean && tsc",
-    "test": "cross-env NODE_ENV=test mocha src/test/**/*.test.js",
+    "test": "npm run compile && cross-env NODE_ENV=test mocha 'src/test/**/*.test.js' 'out/**/*.test.js'",
     "docs": "npm run docs:openapi && npm run docs:api",
     "docs:openapi": "generate-openapi > openapi.json",
     "docs:api": "generate-docs > API.md",
@@ -35,6 +35,7 @@
     "@types/chai": "^4.3.14",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.12.7",
+    "@types/sinon": "^17.0.3",
     "@typescript-eslint/eslint-plugin": "^7.6.0",
     "@typescript-eslint/parser": "^7.6.0",
     "chai": "^4.3.14",
@@ -44,6 +45,7 @@
     "eslint-config-prettier": "^9.1.0",
     "mocha": "^10.4.0",
     "npm-run-all": "^4.1.5",
+    "sinon": "^17.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
   }

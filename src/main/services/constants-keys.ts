@@ -1,0 +1,1 @@
+export const HEARTBEAT_TIMEOUT = 'HeartbeatTimeout';
