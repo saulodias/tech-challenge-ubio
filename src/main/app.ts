@@ -9,6 +9,11 @@ import { CleanupService } from './services/cleanup-service.js';
 import { DiscoveryService } from './services/discovery-service.js';
 import { LoggerService } from './services/logger-service.js';
 import { LoggerRepository } from './repositories/logger-repository.js';
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Set the heartbeat timeout in minutes
+const heartbeatTimeout = Number(process.env.HEARTBEAT_TIMEOUT || 30);
 
 export class App extends Application {
     @dep() mongodb!: MongoDb;
@@ -21,10 +26,12 @@ export class App extends Application {
         mesh.service(DiscoveryRepository);
         mesh.service(DiscoveryService);
 
-        mesh.service(CleanupService);
-
         mesh.service(LoggerRepository)
         mesh.service(LoggerService);
+
+        mesh.constant("HeartbeatTimeout", heartbeatTimeout);
+        
+        mesh.service(CleanupService);
 
         return mesh;
     }

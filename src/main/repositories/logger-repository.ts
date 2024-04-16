@@ -1,11 +1,7 @@
 import { LogPayload } from '@ubio/framework';
 import { MongoDb } from '@ubio/framework/modules/mongodb';
 import { dep } from 'mesh-ioc';
-
-export interface LogEntry extends LogPayload {
-    id: string;
-    timestamp: number;
-}
+import { LogEntry } from '../schema/log-entry.js';
 
 export class LoggerRepository {
     @dep() private mongodb!: MongoDb;
@@ -16,7 +12,8 @@ export class LoggerRepository {
 
     async log(payload: LogPayload): Promise<void> {
         try {
-            await this.collection.insertOne({ ...payload, id: crypto.randomUUID(), time: Date.now() });
+            const document = { ...payload, id: crypto.randomUUID(), timestamp: Date.now() } as LogEntry;
+            await this.collection.insertOne(document);
         } catch (error) {
             console.error('Error occurred while logging:', error);
         }

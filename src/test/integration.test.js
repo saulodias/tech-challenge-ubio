@@ -1,7 +1,12 @@
 import chai, { expect } from "chai";
 import chaiHttp from "chai-http";
+import dotenv from 'dotenv';
 
 chai.use(chaiHttp);
+
+dotenv.config({ path: '.env.test' });
+
+const baseUrl = process.env.API_BASE_URL; 
 
 // Custom assertion to check if a string is a valid UUID
 // Register a custom assertion for UUID validation
@@ -16,13 +21,12 @@ chai.Assertion.addMethod("isUUID", function () {
 });
 
 describe("DiscoveryRouter", () => {
-  const server = "http://localhost:8080";
   const createdInstances = [];
 
   // After all tests, clean up all instances
   after(async () => {
     for (const { id, group } of createdInstances) {
-      await chai.request(server).delete(`/${group}/${id}`);
+      await chai.request(baseUrl).delete(`/${group}/${id}`);
     }
   });
 
@@ -71,7 +75,7 @@ describe("DiscoveryRouter", () => {
         intancesNumber.forEach(() => {
           const instanceId = crypto.randomUUID();
           chai
-            .request(server)
+            .request(baseUrl)
             .post(`/${groupId}/${instanceId}`)
             .send({ meta: { key1: "example" } })
             .end(requestCallback);
@@ -108,7 +112,7 @@ describe("DiscoveryRouter", () => {
       // Send requests to create instances for diverse groups
       createdInstances.forEach(({ group, id }) => {
         chai
-          .request(server)
+          .request(baseUrl)
           .post(`/${group}/${id}`)
           .send({ meta: { key1: "exampleUpdated" } })
           .end(requestCallback);
@@ -119,7 +123,7 @@ describe("DiscoveryRouter", () => {
   describe("GET /", () => {
     it("should get a list of groups", (done) => {
       chai
-        .request(server)
+        .request(baseUrl)
         .get("/")
         .end((err, res) => {
           expect(err).to.be.null;
@@ -140,7 +144,7 @@ describe("DiscoveryRouter", () => {
   describe("GET /{group}", () => {
     it("should get instances of a group", (done) => {
       chai
-        .request(server)
+        .request(baseUrl)
         .get("/GroupA")
         .end((err, res) => {
           expect(err).to.be.null;
@@ -165,7 +169,7 @@ describe("DiscoveryRouter", () => {
     it("should unregister an instance", (done) => {
       // First, create an instance to delete
       chai
-        .request(server)
+        .request(baseUrl)
         .post("/GroupA/38b4e940-9d93-4f35-a9e7-8f3475c8f7fc")
         .send({ meta: { key1: "example" } })
         .end((err, res) => {
@@ -173,7 +177,7 @@ describe("DiscoveryRouter", () => {
           expect(res).to.have.status(200);
 
           chai
-            .request(server)
+            .request(baseUrl)
             .delete(`/GroupA/${res.body.id}`)
             .end((err, res) => {
               expect(err).to.be.null;

@@ -7,10 +7,12 @@ services:
       dockerfile: Dockerfile.mongodb
     container_name: mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017"
 
   nodejs:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile.nodejs
     container_name: nodejs
     ports:
       - "8080:8080"

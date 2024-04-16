@@ -41,7 +41,7 @@ export class DiscoveryRepository {
         return await this.collection.deleteOne({ group, id });
     }
 
-    async getAllGroupsSummary(): Promise<any[]> {
+    async getAllGroupsSummary(): Promise<GroupSummary[]> {
         const summary = await this.collection.aggregate<GroupSummary>([
             {
                 $group: {

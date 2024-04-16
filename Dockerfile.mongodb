@@ -3,3 +3,6 @@ FROM mongo:latest
 
 # Expose MongoDB port
 EXPOSE 27017
+
+# Set up script to initialize MongoDB database
+COPY init-db.js /docker-entrypoint-initdb.d/
