@@ -79,10 +79,10 @@ Retrieves a summary of all groups.
       ```json
       [
         {
-          "_id": "string",
+          "group": "string",
           "instances": "number",
           "createdAt": "number",
-          "updatedAt": "number"
+          "lastUpdatedAt": "number"
         }
       ]
       ```

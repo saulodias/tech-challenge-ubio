@@ -42,7 +42,7 @@ export class DiscoveryRepository {
     }
 
     async getAllGroupsSummary(): Promise<GroupSummary[]> {
-        const summary = await this.collection.aggregate<GroupSummary>([
+        const pipeline = [
             {
                 $group: {
                     _id: '$group',
@@ -50,10 +50,22 @@ export class DiscoveryRepository {
                     createdAt: { $min: '$createdAt' },
                     lastUpdatedAt: { $max: '$updatedAt' }
                 }
+            },
+            {
+                $project: {
+                    group: '$_id',
+                    instances: 1,
+                    createdAt: 1,
+                    lastUpdatedAt: 1,
+                    _id: 0
+                }
             }
-        ]).toArray();
+        ];
+    
+        const summary = await this.collection.aggregate<GroupSummary>(pipeline).toArray();
         return summary;
     }
+    
 
     async getGroupInstances(group: string): Promise<Instance[]> {
         const instances = await this.collection.find<Instance>({ group }).toArray();

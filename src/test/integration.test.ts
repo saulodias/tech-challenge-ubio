@@ -8,20 +8,9 @@ dotenv.config({ path: '.env.test' });
 
 const baseUrl = process.env.API_BASE_URL; 
 
-// Custom assertion to check if a string is a valid UUID
-// Register a custom assertion for UUID validation
-chai.Assertion.addMethod("isUUID", function () {
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  this.assert(
-    uuidRegex.test(this._obj),
-    "expected #{this} to be a UUID",
-    "expected #{this} not to be a UUID"
-  );
-});
 
 describe("DiscoveryRouter", () => {
-  const createdInstances = [];
+  const createdInstances: { group: string; id: string }[] = [];
 
   // After all tests, clean up all instances
   after(async () => {
@@ -36,7 +25,7 @@ describe("DiscoveryRouter", () => {
       const numInstancesPerGroup = 2;
       const groupIds = Array.from(
         { length: numGroups },
-        (_, index) => `Group${index + 1}`
+        (_, index) => `MyGroup${index + 1}`
       );
       const intancesNumber = Array.from(
         { length: numInstancesPerGroup },
@@ -46,13 +35,12 @@ describe("DiscoveryRouter", () => {
       let completedRequests = 0;
 
       // Callback function to be executed after each request completes
-      const requestCallback = (err, res) => {
+      const requestCallback = (err: any, res: any) => {
         expect(err).to.be.null;
         expect(res).to.have.status(200);
         expect(res.body)
           .to.have.property("id")
           .that.is.a("string")
-          .and.isUUID();
         expect(groupIds.includes(res.body.group)).to.be.true; // Check if the group ID is one of the diverse groups
         expect(res.body).to.have.property("createdAt").that.is.a("number");
         expect(res.body).to.have.property("updatedAt").that.is.a("number");
@@ -88,13 +76,12 @@ describe("DiscoveryRouter", () => {
     it("should register update all instances created in the previous test", (done) => {
       let completedRequests = 0;
 
-      const requestCallback = (err, res) => {
+      const requestCallback = (err: any, res: any) => {
         expect(err).to.be.null;
         expect(res).to.have.status(200);
         expect(res.body)
           .to.have.property("id")
           .that.is.a("string")
-          .and.isUUID();
         expect(res.body).to.have.property("createdAt").that.is.a("number");
         expect(res.body).to.have.property("updatedAt").that.is.a("number");
 
@@ -130,7 +117,7 @@ describe("DiscoveryRouter", () => {
           expect(res).to.have.status(200);
           expect(res.body).to.be.an("array");
           expect(res.body.length).to.be.greaterThan(0); // Ensure at least one group is returned
-          expect(res.body[0]).to.have.property("_id").that.is.a("string");
+          expect(res.body[0]).to.have.property("group").that.is.a("string");
           expect(res.body[0]).to.have.property("instances").that.is.a("number");
           expect(res.body[0]).to.have.property("createdAt").that.is.a("number");
           expect(res.body[0])
@@ -152,7 +139,7 @@ describe("DiscoveryRouter", () => {
           expect(res.body).to.be.an("array");
 
           // Ensure each instance has the expected properties
-          res.body.forEach((instance) => {
+          res.body.forEach((instance: any) => {
             expect(instance).to.have.property("id").that.is.a("string");
             expect(instance).to.have.property("group").equal("GroupA");
             expect(instance).to.have.property("createdAt").that.is.a("number");

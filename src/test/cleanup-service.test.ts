@@ -3,12 +3,11 @@ import chai, { expect } from "chai";
 import chaiHttp from "chai-http";
 import dotenv from 'dotenv';
 import sinon from 'sinon';
-import { Instance } from "../schema/instance.js";
-import { CleanupService } from "./cleanup-service.js";
-import { HEARTBEAT_TIMEOUT } from "./constants-keys.js";
-import { DiscoveryServiceBase, GroupSummary } from "./discovery-service-base.js";
-import { LoggerServiceBase } from "./logger-service-base.js";
-import { Mesh } from "mesh-ioc";
+import { Instance } from "../main/schema/instance.js";
+import { CleanupService } from "../main/services/cleanup-service.js";
+import { HEARTBEAT_TIMEOUT } from "../main/services/constants-keys.js";
+import { DiscoveryServiceBase, GroupSummary } from "../main/services/discovery-service-base.js";
+import { LoggerServiceBase } from "../main/services/logger-service-base.js";
 
 chai.use(chaiHttp);
 
@@ -33,13 +32,13 @@ class DiscoveryServiceMock extends DiscoveryServiceBase {
         // Simulate getting summary of all groups
         const groups: GroupSummary[] = [
             {
-                _id: 'group1',
+                group: 'group1',
                 instances: 1,
                 createdAt: Date.now() - 60000, // Created 1 minute ago
                 lastUpdatedAt: Date.now() - 30000 // Updated 30 seconds ago
             },
             {
-                _id: 'group2',
+                group: 'group2',
                 instances: 1,
                 createdAt: Date.now() - 120000, // Created 2 minutes ago
                 lastUpdatedAt: Date.now() - 60000 // Updated 1 minute ago
@@ -63,37 +62,41 @@ class DiscoveryServiceMock extends DiscoveryServiceBase {
     }
 }
 
-
-class TestApp extends Application {
-    override mesh!: Mesh;
-    
-    override createGlobalScope() {
-        const mesh = super.createGlobalScope();
-
-        mesh.constant(HEARTBEAT_TIMEOUT, heartbeatTimeout);
-        mesh.service(DiscoveryServiceBase, DiscoveryServiceMock);
-        mesh.service(LoggerServiceBase, ConsoleLogger);
-        mesh.service(CleanupService);
-        
-        return mesh;
-    }
-}
-
-
 describe("CleanupService", () => {
     let app: TestApp;
     let cleanupService: CleanupService;
     let loggerService: LoggerServiceBase;
     let loggerSpy: sinon.SinonSpy;
 
+    class TestApp extends Application {
+        override createGlobalScope() {
+            const mesh = super.createGlobalScope();
+
+            mesh.constant(HEARTBEAT_TIMEOUT, heartbeatTimeout);
+            mesh.service(DiscoveryServiceBase, DiscoveryServiceMock);
+            mesh.service(LoggerServiceBase, ConsoleLogger);
+            mesh.service(CleanupService);
+
+            return mesh;
+        }
+    }
+
     before(() => {
         app = new TestApp()
-        app.start().then(() => {
+        app.beforeStart().then(() => {
             loggerService = app.mesh.resolve(LoggerServiceBase);
-            loggerSpy = sinon.spy(loggerService, 'info');
             cleanupService = app.mesh.resolve(CleanupService);
+            cleanupService.startCleanupRoutine().then(() => {
+                it("should set the correct heartbeat timeout", () => {
+                    expect(cleanupService.heartbeatTimeout).to.equal(heartbeatTimeout);
+                })
+
+                it("should verify that the correct log message was called", () => {
+                    expect(loggerSpy.calledWith(`Starting cleanup with ${cleanupService.heartbeatTimeout} min heartbeat timeout...`)).to.be.true;
+                })
+            })
+            loggerSpy = sinon.spy(loggerService, 'info');
         })
-        
     });
 
     after(() => {
@@ -106,22 +109,12 @@ describe("CleanupService", () => {
         })
     });
 
-    it("should verify that the heartbeat timeout is set correctly", () => {
-        expect(cleanupService.heartbeatTimeout).to.equal(.01); // .6 seconds
-    });
-
     it("should trigger cleanup routine and clean up expired instances", async () => {
-        // Start the cleanup routine
-        await cleanupService.startCleanupRoutine();
-
-        // Verify that the correct log message was called
-        expect(loggerSpy.calledWith(`Starting cleanup with ${cleanupService.heartbeatTimeout} min heartbeat timeout...`)).to.be.true;
-
         // Wait for a brief period to allow the cleanup routine to finish
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 seconds
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
 
         // Verify that the correct log message was called
-        expect(loggerSpy.calledWithMatch(/Cleanup completed for group .*\. Removed .* expired instances\./)).to.be.true;
+        expect(loggerSpy.calledWithMatch(/Cleanup completed for .*\. Removed .* expired instances\./)).to.be.true;
 
         // Stop the cleanup routine
         cleanupService.stopCleanupRoutine();

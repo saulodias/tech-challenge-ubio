@@ -1,7 +1,7 @@
 import { Instance } from '../schema/instance.js';
 
 export interface GroupSummary {
-    _id: string;
+    group: string;
     instances: number;
     createdAt: number;
     lastUpdatedAt: number;

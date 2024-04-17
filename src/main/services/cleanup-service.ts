@@ -46,7 +46,7 @@ export class CleanupService {
 
         // Iterate through each group to get instances and clean up
         for (const group of allGroups) {
-            const groupInstances = await this.discoveryService.getGroupInstances(group._id);
+            const groupInstances = await this.discoveryService.getGroupInstances(group.group);
 
             // Filter expired instances based on updatedAt timestamp
             const expiredInstances = groupInstances.filter(instance => instance.updatedAt < expirationDate);
@@ -57,10 +57,10 @@ export class CleanupService {
 
             // Remove expired instances
             for (const instance of expiredInstances) {
-                await this.discoveryService.unregisterInstance(group._id, instance.id);
+                await this.discoveryService.unregisterInstance(group.group, instance.id);
             }
 
-            this.logger.info(`Cleanup completed for group ${group._id}. Removed ${expiredInstances.length} expired instances.`);
+            this.logger.info(`Cleanup completed for ${group.group}. Removed ${expiredInstances.length} expired instances.`);
         }
     }
 }

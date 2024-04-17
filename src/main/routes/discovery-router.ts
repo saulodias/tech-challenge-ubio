@@ -15,7 +15,7 @@ export class DiscoveryRouter extends Router {
                 schema: {
                     type: 'object',
                     properties: {
-                        _id: { type: 'string', format: 'uuid' },
+                        id: { type: 'string', format: 'uuid' },
                         group: { type: 'string' },
                         createdAt: { type: 'number' },
                         updatedAt: { type: 'number' },
