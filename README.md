@@ -25,12 +25,13 @@ To run the integration tests:
 
 1. Ensure that your Docker containers for MongoDB and Node.js are up and running:
    ```bash
-   docker-compose up
+   docker-compose up -d
    ```
+   > This will run docker in the background.
 
-2. In another terminal, run the integration tests using npm:
+2. Run the integration tests in the nodejs container.
     ```bash
-    npm test
+    docker-compose exec nodejs npm test 
     ```
 
 > Development Note: For this challenge, both integration and unit tests are executed with a single command for simplicity. However, in a real production scenario, they should be segregated. Integration tests, needing a testing environment, serve a distinct purpose in the CI/CD pipeline compared to unit tests.
